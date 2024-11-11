@@ -14,7 +14,7 @@ contract BilBoydCarNFT is ERC721 {
         string color;
         uint256 year;
         uint256 originalValue;
-        uint256 mileageCap;
+        uint256 currentMileage;
     }
 
     struct Lease {
@@ -30,7 +30,7 @@ contract BilBoydCarNFT is ERC721 {
     mapping(address => Lease) public leases;
     address public bilBoyd;
 
-    uint256 public constant PAYMENT_PERIOD = 30 days;
+    uint256 public constant PAYMENT_PERIOD = 30 days; // payment due every month 
 
     constructor() ERC721("BilBoydCarNFT", "BBCNFT") {
         bilBoyd = msg.sender;
@@ -46,6 +46,7 @@ contract BilBoydCarNFT is ERC721 {
         _;
     }
 
+    // TASK 1
     // Function to mint a new car NFT
     function addCar(
         string memory model,
@@ -61,22 +62,76 @@ contract BilBoydCarNFT is ERC721 {
         _mint(bilBoyd, newCarId);
     }
 
+    // TASK 2
+    // Function to calculate the monthly quota for leasing
+    function calculateMonthlyQuota(
+        uint256 carId,
+        uint256 yearsOfExperience,
+        uint256 contractDuration,
+        uint256 mileageCap
+
+    ) public view returns (uint256) {
+        Car memory car = cars[carId];
+        uint256 baseRate = car.originalValue / 1000;
+        
+        uint256 experienceDiscount = 0;
+        if (yearsOfExperience >= 4 && yearsOfExperience <= 10) {
+            experienceDiscount = (baseRate * 2) / 100; // 2% discount
+        } else if (yearsOfExperience > 10) {
+            experienceDiscount = (baseRate * 5) / 100; // 5% discount
+        }
+
+        uint256 contractDiscount = 0;
+        if (contractDuration >= 2 && contractDuration < 6) {
+            contractDiscount = (baseRate * 3) / 100; // 3% discount
+        } else if (contractDuration >= 6 && contractDuration < 12) {
+            contractDiscount = (baseRate * 5) / 100; // 5% discount
+        } else if (contractDuration > 12 ) {
+            contractDiscount = (baseRate * 8) / 100; // 8% discount
+        }
+
+        // Mileage cap premium
+        uint256 mileageCapPremium = 0;
+        if (mileageCap >= 5000 && mileageCap < 10000) {
+            mileageCapPremium = baseRate / 100; // 1% premium
+        } else if (mileageCap >= 10000 && mileageCap < 20000) {
+            mileageCapPremium = (baseRate * 2) / 100; // 2% premium
+        } else if (mileageCap > 20000) {
+            mileageCapPremium = (baseRate * 3) / 100; // 3% premium
+        }
+        
+        // Current malage 
+        uint256 currentMileageDiscount = 0;
+        if (car.currentMileage >= 10000 && car.currentMileage < 20000) {
+            currentMileageDiscount = baseRate / 100; // 1% discount
+        } else if (car.currentMileage >= 20000 && car.currentMileage < 50000) {
+            currentMileageDiscount = (baseRate * 2) / 100; // 2% discount
+        } else if (car.currentMileage >= 50000) {
+            currentMileageDiscount = (baseRate * 3) / 100; // 3% discount
+        }
+
+        // Final monthly quota calculation
+        uint256 monthlyQuota = baseRate - experienceDiscount - contractDiscount + mileageCapPremium - currentMileageDiscount;
+
+        return monthlyQuota;
+    }
+
+    // TASK 3
     // Function to register the lease and lock funds
     function registerLease(
         uint256 carId,
-        uint256 currentMileage,
         uint256 yearsOfExperience,
-        uint256 contractDuration
+        uint256 contractDuration,
+        uint256 mileageCap
     ) public payable {
-        require(ownerOf(carId) == bilBoyd, "Car is not available for lease.");
-        require(!leases[msg.sender].active, "Already leasing a car.");
+        //require(ownerOf(carId) == bilBoyd, "Car is not available for lease.");
+        //require(!leases[msg.sender].active, "Already leasing a car.");
 
-        uint256 monthlyQuota = calculateMonthlyQuota(carId, currentMileage, yearsOfExperience, contractDuration);
-        uint256 downPayment = monthlyQuota * 3;
-        uint256 totalPayment = downPayment + monthlyQuota;
+        uint256 monthlyQuota = calculateMonthlyQuota(carId, yearsOfExperience, contractDuration, mileageCap);
+        uint256 totalPayment = monthlyQuota * 4;
 
         require(msg.value == totalPayment, "Incorrect payment amount.");
-
+        
         leases[msg.sender] = Lease(carId, msg.sender, monthlyQuota, block.timestamp + PAYMENT_PERIOD, false, true);
         _transfer(bilBoyd, msg.sender, carId);
     }
@@ -88,11 +143,40 @@ contract BilBoydCarNFT is ERC721 {
         require(!lease.confirmedByBilBoyd, "Lease already confirmed.");
 
         lease.confirmedByBilBoyd = true;
+        lease.active = true; // Activate the leas
 
         // Transfer funds to BilBoyd
         payable(bilBoyd).transfer(lease.monthlyQuota * 4); // 3 months down payment + 1st monthly payment
     }
 
+    // TASK 4
+    // Function to make a monthly payment
+    function payMonthlyQuota(uint256 carId) public payable onlyLessee(carId) {
+        Lease storage lease = leases[msg.sender];
+        require(lease.active, "Lease is not active.");
+        require(lease.confirmedByBilBoyd, "Lease is not confirmed.");
+        require(block.timestamp <= lease.nextPaymentDue, "Payment is overdue.");
+        require(msg.value == lease.monthlyQuota, "Incorrect payment amount.");
+
+        // Update next payment due date
+        lease.nextPaymentDue = lease.nextPaymentDue + PAYMENT_PERIOD;
+
+        // Transfer payment to BilBoyd
+        payable(bilBoyd).transfer(msg.value);
+    }
+
+    // Function to handle overdue payments
+    function terminateLeaseForNonPayment(address lessee) public onlyBilBoyd {
+        Lease storage lease = leases[lessee];
+        require(lease.active, "Lease is not active.");
+        require(block.timestamp > lease.nextPaymentDue, "Payment is not overdue.");
+
+        // Terminate lease and transfer car back to BilBoyd
+        lease.active = false;
+        _transfer(lessee, bilBoyd, lease.carId);
+    }
+    
+    // TASK 5
     // Function to end lease options at lease expiry
     function endLease(uint256 carId, uint8 option) public onlyLessee(carId) {
         Lease storage lease = leases[msg.sender];
@@ -115,51 +199,4 @@ contract BilBoydCarNFT is ERC721 {
         }
     }
 
-    // Function to make a monthly payment
-    function payMonthlyQuota(uint256 carId) public payable onlyLessee(carId) {
-        Lease storage lease = leases[msg.sender];
-        require(lease.active, "Lease is not active.");
-        require(lease.confirmedByBilBoyd, "Lease is not confirmed.");
-        require(block.timestamp <= lease.nextPaymentDue, "Payment is overdue.");
-        require(msg.value == lease.monthlyQuota, "Incorrect payment amount.");
-
-        // Update next payment due date
-        lease.nextPaymentDue = block.timestamp + PAYMENT_PERIOD;
-
-        // Transfer payment to BilBoyd
-        payable(bilBoyd).transfer(msg.value);
-    }
-
-    // Function to handle overdue payments
-    function terminateLeaseForNonPayment(address lessee) public onlyBilBoyd {
-        Lease storage lease = leases[lessee];
-        require(lease.active, "Lease is not active.");
-        require(block.timestamp > lease.nextPaymentDue, "Payment is not overdue.");
-
-        // Terminate lease and transfer car back to BilBoyd
-        lease.active = false;
-        _transfer(lessee, bilBoyd, lease.carId);
-    }
-
-    // Function to calculate the monthly quota for leasing
-    function calculateMonthlyQuota(
-        uint256 carId,
-        uint256 currentMileage,
-        uint256 yearsOfExperience,
-        uint256 contractDuration
-    ) public view returns (uint256) {
-        Car memory car = cars[carId];
-        uint256 baseQuota = car.originalValue / 1000;
-        uint256 mileageFactor = (currentMileage * 100) / car.mileageCap;
-        uint256 experienceDiscount = yearsOfExperience * 10;
-        uint256 durationFactor = contractDuration * 5;
-
-        uint256 monthlyQuota = baseQuota + ((baseQuota * mileageFactor) / 100);
-        if (experienceDiscount < monthlyQuota) {
-            monthlyQuota -= experienceDiscount;
-        }
-        monthlyQuota += durationFactor;
-
-        return monthlyQuota;
-    }
 }
