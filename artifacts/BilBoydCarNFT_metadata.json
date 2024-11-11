@@ -189,6 +189,19 @@
 				"type": "event"
 			},
 			{
+				"inputs": [],
+				"name": "PAYMENT_PERIOD",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
 				"inputs": [
 					{
 						"internalType": "string",
@@ -259,15 +272,23 @@
 				"type": "function"
 			},
 			{
+				"inputs": [],
+				"name": "bilBoyd",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
 				"inputs": [
 					{
 						"internalType": "uint256",
 						"name": "carId",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "currentMileage",
 						"type": "uint256"
 					},
 					{
@@ -278,6 +299,11 @@
 					{
 						"internalType": "uint256",
 						"name": "contractDuration",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "mileageCap",
 						"type": "uint256"
 					}
 				],
@@ -329,11 +355,42 @@
 					},
 					{
 						"internalType": "uint256",
-						"name": "mileageCap",
+						"name": "currentMileage",
 						"type": "uint256"
 					}
 				],
 				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "lessee",
+						"type": "address"
+					}
+				],
+				"name": "confirmLease",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "carId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint8",
+						"name": "option",
+						"type": "uint8"
+					}
+				],
+				"name": "endLease",
+				"outputs": [],
+				"stateMutability": "nonpayable",
 				"type": "function"
 			},
 			{
@@ -358,57 +415,6 @@
 			{
 				"inputs": [
 					{
-						"internalType": "uint256",
-						"name": "carId",
-						"type": "uint256"
-					}
-				],
-				"name": "getCarDetails",
-				"outputs": [
-					{
-						"components": [
-							{
-								"internalType": "uint256",
-								"name": "id",
-								"type": "uint256"
-							},
-							{
-								"internalType": "string",
-								"name": "model",
-								"type": "string"
-							},
-							{
-								"internalType": "string",
-								"name": "color",
-								"type": "string"
-							},
-							{
-								"internalType": "uint256",
-								"name": "year",
-								"type": "uint256"
-							},
-							{
-								"internalType": "uint256",
-								"name": "originalValue",
-								"type": "uint256"
-							},
-							{
-								"internalType": "uint256",
-								"name": "mileageCap",
-								"type": "uint256"
-							}
-						],
-						"internalType": "struct BilBoydCarNFT.Car",
-						"name": "",
-						"type": "tuple"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
 						"internalType": "address",
 						"name": "owner",
 						"type": "address"
@@ -424,6 +430,50 @@
 					{
 						"internalType": "bool",
 						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"name": "leases",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "carId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "address",
+						"name": "lessee",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "monthlyQuota",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "nextPaymentDue",
+						"type": "uint256"
+					},
+					{
+						"internalType": "bool",
+						"name": "confirmedByBilBoyd",
+						"type": "bool"
+					},
+					{
+						"internalType": "bool",
+						"name": "active",
 						"type": "bool"
 					}
 				],
@@ -460,6 +510,47 @@
 					}
 				],
 				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "carId",
+						"type": "uint256"
+					}
+				],
+				"name": "payMonthlyQuota",
+				"outputs": [],
+				"stateMutability": "payable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "carId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "yearsOfExperience",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "contractDuration",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "mileageCap",
+						"type": "uint256"
+					}
+				],
+				"name": "registerLease",
+				"outputs": [],
+				"stateMutability": "payable",
 				"type": "function"
 			},
 			{
@@ -561,6 +652,19 @@
 					}
 				],
 				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "lessee",
+						"type": "address"
+					}
+				],
+				"name": "terminateLeaseForNonPayment",
+				"outputs": [],
+				"stateMutability": "nonpayable",
 				"type": "function"
 			},
 			{
@@ -874,11 +978,11 @@
 			]
 		},
 		"BilBoydCarNFT.sol": {
-			"keccak256": "0x65150a1580a23697b5c1955a0c3b460f3ef3af4374e3fd129e1b89a7813bc1cc",
+			"keccak256": "0xf1f7a134689f76d6d9a44db2e306ba7961ca042fa69f76bb96ca527fa5978ace",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://2a3080ffeffe683492f4b53785063626f93ae782afab89dd3e21439fadda0285",
-				"dweb:/ipfs/QmUoZBzT8Tc22M3b5Pv3DArz9DEGXQTGgwbEoyZoMrfPkv"
+				"bzz-raw://53acbf731ac5c04a5baf5466faccb7e50c8718860ac42d971f841c8aec6353a2",
+				"dweb:/ipfs/QmeYR2pLxBfXMcDgnD3pH5WS3sKhVFagZ4UWHUHYsUjJxR"
 			]
 		}
 	},
