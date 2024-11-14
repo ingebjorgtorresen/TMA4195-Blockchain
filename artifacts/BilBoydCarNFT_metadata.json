@@ -386,6 +386,26 @@
 						"internalType": "uint8",
 						"name": "option",
 						"type": "uint8"
+					},
+					{
+						"internalType": "uint256",
+						"name": "newCarId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "currentMileage",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "yearsOfExperience",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "contractDuration",
+						"type": "uint256"
 					}
 				],
 				"name": "endLease",
@@ -978,11 +998,11 @@
 			]
 		},
 		"BilBoydCarNFT.sol": {
-			"keccak256": "0x6ad1d0e54c87b69d84c5a8986080c6ff0f8bb9aba71a0140ee2749e37e8670a8",
+			"keccak256": "0x9558ba3a966d83a149ac2a38f51d4b747f6395a870d259f3fd61090f36adc45b",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://24359dbce4f958ebe4439b1edede0d8eecbbbd7bacb4fda21133cf3bb0aed988",
-				"dweb:/ipfs/QmPoM2ZUzi9r67abG7JJFcxjB7iPss2bZ3M7oK56CaeccR"
+				"bzz-raw://3f9b53b9c3c773209cbec00980a211632f1094c4ac443506c67cc27ce6a6effa",
+				"dweb:/ipfs/QmYXbsxpKvDxZoMMWrojJewB53xcz562avc2NFJHe1ZNeB"
 			]
 		}
 	},

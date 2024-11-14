@@ -28,13 +28,14 @@ contract BilBoydCarNFT is ERC721 {
         uint256 currentMileage;           // The current mileage of the car. This will change over time.
     }
 
+    // Defines the structure of our leasing "contracts" with appropriate attributes
     struct Lease {
-        uint256 carId;
-        address lessee;
-        uint256 monthlyQuota;
-        uint256 nextPaymentDue;
-        bool confirmedByBilBoyd;
-        bool active;
+        uint256 carId;                  // Car ID for the car to be leased
+        address lessee;                 // The address of the person who leases the car
+        uint256 monthlyQuota;           // The monthly quota to be payed each month
+        uint256 nextPaymentDue;         // The date the next payment is due
+        bool confirmedByBilBoyd;        // a boolean value wether or not the lease contract is confirmed by bilBoyd
+        bool active;                    // a boolean value wether or not the lease contract is currently active
     }
 
     mapping(uint256 => Car) public cars;   // Mapping fromn car id to the car struct. This allows retrieval of cat details by its ID
