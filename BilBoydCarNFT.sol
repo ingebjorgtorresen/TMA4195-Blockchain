@@ -80,52 +80,56 @@ contract BilBoydCarNFT is ERC721 {
     // TASK 2
     // Function to calculate the monthly quota for leasing
     function calculateMonthlyQuota(
-        uint256 carId,
-        uint256 yearsOfExperience,
-        uint256 contractDuration,
-        uint256 mileageCap
+        uint256 carId,                      //ID of leased car
+        uint256 yearsOfExperience,          //Driving experience of lessee (in years)
+        uint256 contractDuration,           //Duration of contract (in months)
+        uint256 mileageCap                  //Milage cap set for the lease
 
+    //View-only so the function costs no gas fee. 
+    //All the calculations are defined on what we infer to be reasonable discounts/premiums for each instance.
     ) public view returns (uint256) {
-        Car memory car = cars[carId];
-        uint256 baseRate = car.originalValue / 1000;
+        Car memory car = cars[carId];                                   //Get the car details from storage
+        uint256 baseRate = car.originalValue / 1000;                    //Monthly rate calculated as 1/1000 of the car's original value
         
+        //Calculate discount based on the driver's experience in years. More experience yeields a higher discount.
         uint256 experienceDiscount = 0;
         if (yearsOfExperience >= 4 && yearsOfExperience <= 10) {
-            experienceDiscount = (baseRate * 2) / 100; // 2% discount
+            experienceDiscount = (baseRate * 2) / 100; //2% discount for 4-10 years of experience
         } else if (yearsOfExperience > 10) {
-            experienceDiscount = (baseRate * 5) / 100; // 5% discount
+            experienceDiscount = (baseRate * 5) / 100; //5% discount for 10+ years of experience
         }
 
+         //Calculate discount based on the contract duration. The longer the contract is, the higher the discount.
         uint256 contractDiscount = 0;
         if (contractDuration >= 2 && contractDuration < 6) {
-            contractDiscount = (baseRate * 3) / 100; // 3% discount
-        } else if (contractDuration >= 6 && contractDuration < 12) {
-            contractDiscount = (baseRate * 5) / 100; // 5% discount
+            contractDiscount = (baseRate * 3) / 100; //3% discount for a contract duration of  2-5 months
+        } else if (contractDuration >= 6 && contractDuration <= 12) {
+            contractDiscount = (baseRate * 5) / 100; //5% discount for a contract duration of  6-12 months
         } else if (contractDuration > 12 ) {
-            contractDiscount = (baseRate * 8) / 100; // 8% discount
+            contractDiscount = (baseRate * 8) / 100; //8% discount for a contract duration over a year
         }
 
-        // Mileage cap premium
+        //Calculate milage cap premium. The premium gets higher the higher the milage cap is.
         uint256 mileageCapPremium = 0;
         if (mileageCap >= 5000 && mileageCap < 10000) {
-            mileageCapPremium = baseRate / 100; // 1% premium
+            mileageCapPremium = baseRate / 100; //1% premium for a mileage cap between 5,000-9,999 km
         } else if (mileageCap >= 10000 && mileageCap < 20000) {
-            mileageCapPremium = (baseRate * 2) / 100; // 2% premium
+            mileageCapPremium = (baseRate * 2) / 100; //2% premium for a mileage cap between 10,000-19,999 km
         } else if (mileageCap > 20000) {
-            mileageCapPremium = (baseRate * 3) / 100; // 3% premium
+            mileageCapPremium = (baseRate * 3) / 100; //3% premium for a mileage cap over 20,000 km
         }
         
-        // Current malage 
+        //Calculate discount based on current mileage. Higher milage gives higher discounts. 
         uint256 currentMileageDiscount = 0;
         if (car.currentMileage >= 10000 && car.currentMileage < 20000) {
-            currentMileageDiscount = baseRate / 100; // 1% discount
+            currentMileageDiscount = baseRate / 100; //1% discount for mileage between 10,000-19,999 km
         } else if (car.currentMileage >= 20000 && car.currentMileage < 50000) {
-            currentMileageDiscount = (baseRate * 2) / 100; // 2% discount
+            currentMileageDiscount = (baseRate * 2) / 100; //2% for mileage between 20,000-49,999 km
         } else if (car.currentMileage >= 50000) {
-            currentMileageDiscount = (baseRate * 3) / 100; // 3% discount
+            currentMileageDiscount = (baseRate * 3) / 100; //3% discount for mileage over 50,000 km
         }
 
-        // Final monthly quota calculation
+        //Final monthly quota calculation, combiing all previous calculations.
         uint256 monthlyQuota = baseRate - experienceDiscount - contractDiscount + mileageCapPremium - currentMileageDiscount;
 
         return monthlyQuota;
