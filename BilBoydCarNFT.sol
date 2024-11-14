@@ -196,26 +196,30 @@ contract BilBoydCarNFT is ERC721 {
     }
     
     // TASK 5
-    // Function to end lease options at lease expiry
-    function endLease(uint256 carId, uint8 option) public onlyLessee(carId) {
-        Lease storage lease = leases[msg.sender];
+    // Function with the three different options at the end of the lease
+    // Used ChatGPT to help with the function syntax
+    function endLease(uint256 carId, uint8 option, uint256 newCarId, uint256 currentMileage, uint256 yearsOfExperience, uint256 contractDuration) public onlyLessee(carId) {
+        Lease storage lease = leases[msg.sender];       // Access lease details
         require(lease.active, "Lease not active.");
 
         if (option == 1) {
-            // Option A: Terminate the lease
-            lease.active = false;
-            _transfer(msg.sender, bilBoyd, carId);
+            // Option 1: Terminate the lease
+            lease.active = false;                       // Sets lease status to inactive
+            _transfer(msg.sender, bilBoyd, carId);      // Transfers the car NFT ownership back to BilBoyd
         } else if (option == 2) {
-            // Option B: Extend lease by one year with a recalculated monthly quota
-            uint256 newQuota = calculateMonthlyQuota(carId, 0, 1, 12); // Assume 1 year extension with updated parameters
+            // Option 2: Extend lease by one year with a recalculated monthly quota
+            uint256 newQuota = calculateMonthlyQuota(carId, 0, 1, 12); // Extend the lease by one year with updated parameters
             lease.monthlyQuota = newQuota;
-            lease.nextPaymentDue = block.timestamp + PAYMENT_PERIOD; // Reset payment due date
+            lease.nextPaymentDue = block.timestamp + PAYMENT_PERIOD;   // Reset payment due date
         } else if (option == 3) {
-            // Option C: Sign a lease for a new vehicle
+            // Option 3: Sign a lease for a new vehicle
             lease.active = false;
             _transfer(msg.sender, bilBoyd, carId);
-            // Lessee can then call registerLease to start a new lease for a different car
-        }
+            registerLease(newCarId, currentMileage, yearsOfExperience, contractDuration); // Call for a new lease registration
+        } else {
+            // In case option is not 
+            revert("Invalid option selected.");
+    }
     }
 
 }
