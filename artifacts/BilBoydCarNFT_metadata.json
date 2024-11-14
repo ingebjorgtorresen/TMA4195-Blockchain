@@ -225,7 +225,7 @@
 					},
 					{
 						"internalType": "uint256",
-						"name": "mileageCap",
+						"name": "currentMileage",
 						"type": "uint256"
 					}
 				],
@@ -978,11 +978,11 @@
 			]
 		},
 		"BilBoydCarNFT.sol": {
-			"keccak256": "0xf1f7a134689f76d6d9a44db2e306ba7961ca042fa69f76bb96ca527fa5978ace",
+			"keccak256": "0x6ad1d0e54c87b69d84c5a8986080c6ff0f8bb9aba71a0140ee2749e37e8670a8",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://53acbf731ac5c04a5baf5466faccb7e50c8718860ac42d971f841c8aec6353a2",
-				"dweb:/ipfs/QmeYR2pLxBfXMcDgnD3pH5WS3sKhVFagZ4UWHUHYsUjJxR"
+				"bzz-raw://24359dbce4f958ebe4439b1edede0d8eecbbbd7bacb4fda21133cf3bb0aed988",
+				"dweb:/ipfs/QmPoM2ZUzi9r67abG7JJFcxjB7iPss2bZ3M7oK56CaeccR"
 			]
 		}
 	},

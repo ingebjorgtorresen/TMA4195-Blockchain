@@ -1,20 +1,31 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
+/*Specify compiler version to be used. Does not compile with versions earlier than 0.8.0
+  Headers and how the contract is created is inspirated by https://docs.openzeppelin.com/contracts/3.x/erc721 
+*/
+pragma solidity ^0.8.0;  
 
-contract BilBoydCarNFT is ERC721 {
-    using Counters for Counters.Counter;
-    Counters.Counter private _carIds;
+/*
+Import openzeppelin libraries to our NFT project. This allows us to leverage ERC721 implementations for our smart contract
+and a counter to keep track of number of cars available.
+*/
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol"; 
+import "@openzeppelin/contracts/utils/Counters.sol"; 
 
-    struct Car {
-        uint256 id;
-        string model;
-        string color;
-        uint256 year;
-        uint256 originalValue;
-        uint256 currentMileage;
+// defining our contract as an ERC721 smart contract utilizing openzeppelin's library
+
+contract BilBoydCarNFT is ERC721 {  
+    using Counters for Counters.Counter;  // enables the use of the Counters library for our counter. Inspired by: https://docs.openzeppelin.com/contracts/2.x/erc721
+    Counters.Counter private _carIds;     // tracks the unique ID for each car
+
+    // Defines the structure of our car objects with appropriate attributes. Struct logic is inspired by: https://medium.com/@PaulElisha1/erc721-intricacies-simplified-understanding-erc721-receiver-hook-writing-a-gas-efficient-nft-0298030a46b6
+    struct Car { 
+        uint256 id;                       // Unique ID for the car
+        string model;                     // Model name of the car
+        string color;                     // Color of the car
+        uint256 year;                     // Year of manufacturing
+        uint256 originalValue;            // Original price of the car
+        uint256 currentMileage;           // The current mileage of the car. This will change over time.
     }
 
     struct Lease {
@@ -26,40 +37,44 @@ contract BilBoydCarNFT is ERC721 {
         bool active;
     }
 
-    mapping(uint256 => Car) public cars;
+    mapping(uint256 => Car) public cars;   // Mapping fromn car id to the car struct. This allows retrieval of cat details by its ID
     mapping(address => Lease) public leases;
-    address public bilBoyd;
+    address public bilBoyd;                // Address of bilBoyd, usually the ethereum address which is assigned in the constructor
 
     uint256 public constant PAYMENT_PERIOD = 30 days; // payment due every month 
 
+    //Defines the constructor of the contract. This initializes the ERC721 contract with name and symbol.
     constructor() ERC721("BilBoydCarNFT", "BBCNFT") {
-        bilBoyd = msg.sender;
+        bilBoyd = msg.sender;                                       //sets bilBoyd as the contract owner
     }
 
+    /* modifier to restrict functions to only bilboyd.
+    Inspired by "An introduction to Solidity and smart contracts" provided by professor.
+    */
     modifier onlyBilBoyd() {
         require(msg.sender == bilBoyd, "Only BilBoyd can perform this action.");
         _;
     }
-
+    // modifier to restrict functions to only the leasee of a specific car
     modifier onlyLessee(uint256 carId) {
         require(leases[msg.sender].carId == carId, "Not authorized.");
         _;
     }
 
     // TASK 1
-    // Function to mint a new car NFT
+    // Function to mint a new car NFT. Inspired by: "An introduction to Solidity and smart contracts"
     function addCar(
-        string memory model,
-        string memory color,
-        uint256 year,
-        uint256 originalValue,
-        uint256 mileageCap
-    ) public onlyBilBoyd {
-        _carIds.increment();
-        uint256 newCarId = _carIds.current();
+        string memory model,                        // defines the model
+        string memory color,                        // defines the color
+        uint256 year,                               // defines the year of manufacturing
+        uint256 originalValue,                      // Original value of the car
+        uint256 currentMileage                      // Current mileage of the car
+    ) public onlyBilBoyd {                          // Only bilboyd can call this function
+        _carIds.increment();                        // Increment the car ID counter
+        uint256 newCarId = _carIds.current();       // assign an unique id to the car to be minted
 
-        cars[newCarId] = Car(newCarId, model, color, year, originalValue, mileageCap);
-        _mint(bilBoyd, newCarId);
+        cars[newCarId] = Car(newCarId, model, color, year, originalValue, currentMileage);  // Store the new cars attributes in the cars mapping
+        _mint(bilBoyd, newCarId);                   // Mint the car NFT and assign it to the contract owner (bilBoyd)
     }
 
     // TASK 2
