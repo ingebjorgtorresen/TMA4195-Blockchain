@@ -217,7 +217,7 @@ contract BilBoydCarNFT is ERC721 {
             _transfer(msg.sender, bilBoyd, carId);
             registerLease(newCarId, currentMileage, yearsOfExperience, contractDuration); // Call for a new lease registration
         } else {
-            // In case option is not 
+            // In case option is not 1-3
             revert("Invalid option selected.");
     }
     }
