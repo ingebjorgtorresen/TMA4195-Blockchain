@@ -191,28 +191,27 @@ contract BilBoydCarNFT is ERC721 {
         uint256 contractDuration,
         uint256 mileageCap
     ) public payable {
-
         uint256 monthlyQuota = calculateMonthlyQuota(carId, yearsOfExperience, contractDuration, mileageCap);
         
         // Total payment includes 3-month down payment + 1st monthly quota
         uint256 totalPayment = monthlyQuota * 4;
 
         // Check if the lessee has sent the correct amount to register the lease
-        require(msg.value == totalPayment, "Incorrect payment amount.");
+        require(msg.value >= totalPayment, "Incorrect payment.");
         
         // Create a new lease entry for the lessee
-        leases[msg.sender] = Lease(carId, msg.sender, monthlyQuota, block.timestamp + PAYMENT_PERIOD, false, true);
+        leases[msg.sender] = Lease(carId, msg.sender, monthlyQuota, block.timestamp + PAYMENT_PERIOD, false, false);
 
         // Transfer the car NFT from BilBoyd to the lessee to indicate temporary ownership
-        _transfer(bilBoyd, msg.sender, carId);
+        _transfer(bilBoyd, address(this), carId);
     }
 
     // Function for BilBoyd to confirm the lease and unlock funds
     function confirmLease(address lessee) public onlyBilBoyd {
         Lease storage lease = leases[lessee]; // Access the lessee's lease record
 
-        // Ensure the lease is active and awaiting BilBoyd's confirmation
-        require(lease.active, "Lease not active.");
+        // Ensure the lease is inactive and awaiting BilBoyd's confirmation
+        require(!lease.active, "Lease already active.");
         require(!lease.confirmedByBilBoyd, "Lease already confirmed.");
 
         // BilBoyd confirms the lease, marking it as active
@@ -222,6 +221,9 @@ contract BilBoydCarNFT is ERC721 {
         // Transfer funds to BilBoyd
         // 3 months down payment + 1st monthly payment
         payable(bilBoyd).transfer(lease.monthlyQuota * 4);
+
+        // Transfer the car NFT from escrow to the lessee
+        _transfer(address(this), lessee, lease.carId);
     }
 
     // TASK 4
@@ -279,10 +281,10 @@ contract BilBoydCarNFT is ERC721 {
         uint256 carId,             
         uint8 option,
         uint256 newCarId,
-        uint256 currentMileage,
         uint256 yearsOfExperience,
-        uint256 contractDuration
-    ) public onlyLessee(carId) {
+        uint256 contractDuration,
+         uint256 mileageCap
+    ) public payable onlyLessee(carId) {
         Lease storage lease = leases[msg.sender]; // Access lease details
         require(lease.active, "Lease not active.");
 
@@ -299,11 +301,19 @@ contract BilBoydCarNFT is ERC721 {
             // Option 3: Sign a lease for a new vehicle
             lease.active = false;
             _transfer(msg.sender, bilBoyd, carId);
-            registerLease(newCarId, currentMileage, yearsOfExperience, contractDuration); // Call for a new lease registration
+
+            // Clear the old lease before registering a new one
+            delete leases[msg.sender];
+
+            // Register the new lease
+            leases[msg.sender] = Lease(newCarId, msg.sender, calculateMonthlyQuota(newCarId, yearsOfExperience, contractDuration, mileageCap), block.timestamp + PAYMENT_PERIOD, false, false);
+
+            // Transfer the new car NFT to the contract temporarily (escrow)
+            _transfer(bilBoyd, address(this), newCarId);
+ // Call for a new lease registration
         } else {
             // In case option is not 1-3
             revert("Invalid option selected.");
         }
     }
-
 }
