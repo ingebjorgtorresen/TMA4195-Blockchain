@@ -111,7 +111,7 @@ contract BilBoydCarNFT is ERC721 {
         uint256 baseRate = car.originalValue / 1000;    // Monthly rate as 1/1000 of car's original value
         
         // Calculate discount based on the driver's experience in years
-        // More experience yeields a higher discount
+        // More experience yields a higher discount
         uint256 experienceDiscount = 0;
         if (yearsOfExperience >= 4 && yearsOfExperience <= 10) {
             // 2% discount for 4-10 years of experience
