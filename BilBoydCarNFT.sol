@@ -163,7 +163,7 @@ contract BilBoydCarNFT is ERC721 {
             currentMileageDiscount = (baseRate * 3) / 100;
         }
 
-        //Final monthly quota calculation, combiing all previous calculations.
+        //Final monthly quota calculation, combining all previous calculations.
         uint256 monthlyQuota = baseRate - experienceDiscount - contractDiscount + mileageCapPremium - currentMileageDiscount;
 
         return monthlyQuota;
